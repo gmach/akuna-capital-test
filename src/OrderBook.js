@@ -49,8 +49,8 @@ const OrderBook = ({
                   <span className='buyMarket' onClick={()=>handleClick(price, 'marketBuy')}></span>
                   <span className='price' style={priceStyle}>{price}</span>
                   <span className='size'
-                    onClick={()=>handleClick(price)}
-                  >{size}</span>  
+                    onClick={()=>handleClick(price, 'limitBuy')}
+                  >{size}</span>    
                   </>
                 }            
               </li>
