@@ -5,7 +5,7 @@ import OrderEntry from "./OrderEntry"
 import "./App.scss"
 
 const webSocketsURL = 'ws://localhost:8080'
-let useMockServer = false
+
 
 function App() {
   const [orderSize, setOrderSize] = useState(0)
@@ -14,6 +14,7 @@ function App() {
     bids: [],
     asks: []
   })
+  const [useMockServer, setUseMockServer] = useState(false)
 
   const { sendJsonMessage, lastMessage } = useWebSocket(webSocketsURL, {
     onOpen: () => console.log('WebSocket connection opened.'),
@@ -25,7 +26,11 @@ function App() {
         setBook(response)
       }
     },
-    onError: () => { useMockServer = true }
+    onError: (e) => { 
+      console.log('got websocket eror from server ' + e)
+      setUseMockServer(true)
+      console.log('useMockServer is ' + useMockServer)
+    }
   });
 
   const fetchOrderBook = useCallback(
@@ -45,7 +50,7 @@ function App() {
 
   useEffect(() => {
     fetchOrderBook()
-  }, [])
+  }, [useMockServer])
 
   const handleSizeChange = (e) => {
     setOrderSize(e.target.value)
