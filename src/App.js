@@ -5,7 +5,7 @@ import OrderEntry from "./OrderEntry"
 import "./App.scss"
 
 const webSocketsURL = 'ws://localhost:8080'
-const useMockServer = false
+let useMockServer = false
 
 function App() {
   const [orderSize, setOrderSize] = useState(0)
@@ -18,13 +18,14 @@ function App() {
   const { sendJsonMessage, lastMessage } = useWebSocket(webSocketsURL, {
     onOpen: () => console.log('WebSocket connection opened.'),
     onClose: () => console.log('WebSocket connection closed.'),
-    shouldReconnect: (closeEvent) => true,
+    shouldReconnect: (closeEvent) => false,
     onMessage: (event) => {
       const response = JSON.parse(event.data)
       if (response) {
         setBook(response)
       }
-    }
+    },
+    onError: () => { useMockServer = true }
   });
 
   const innerFunction = useCallback(
@@ -39,7 +40,7 @@ function App() {
           msg: 'subscribe'
         });
     },
-    []
+    [useMockServer]
   );
 
   useEffect(() => {
@@ -85,7 +86,8 @@ function App() {
     }
   }
   if (book.asks.length === 0 && book.bids.length === 0)
-    return (<div>NO CONTENT</div>)
+    return (<div className="loader"></div>)
+
   return (
     <>
       <OrderBook
