@@ -28,7 +28,7 @@ function App() {
     onError: () => { useMockServer = true }
   });
 
-  const fetchOrderBook = useCallback(
+  const innerFunction = useCallback(
     async () => {
       if (useMockServer) {
         await import('./api/mockServer')
@@ -44,8 +44,8 @@ function App() {
   );
 
   useEffect(() => {
-    fetchOrderBook()
-  }, [])
+    innerFunction()
+  }, [innerFunction])
 
   const handleSizeChange = (e) => {
     setOrderSize(e.target.value)

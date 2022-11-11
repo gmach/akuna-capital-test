@@ -3,34 +3,34 @@ const port = 8080
 const wss = new WebSocketServer({ port });
 import { getOrderBook, handleOrder } from './orderManager.mjs'
 
-wss.on("connection", ws => {
+wss.on("connection", socket => {
     console.log("new client connected");
-    ws.on("message", (data, isBinary)  => {
+    socket.on("message", (data, isBinary)  => {
         const event = JSON.parse(data)
         console.log(`Client has sent us: ${event.msg}`)
-        if (event.msg === 'subscribe')
+        let orderBook = getOrderBook()
+        if (event.msg === 'subscribe') {
+            orderBook = getOrderBook()
+            if (socket.readyState === socket.OPEN) {
+                console.log('sending orderBook to client')
+                socket.send(JSON.stringify(orderBook)); 
+            }
+        }
+        if (event.msg === 'openOrder') {
+            const { orderAction, orderSize, orderPrice } = event.body
+            if (orderSize == 0 || orderPrice == 0) return;
+            console.log(`processing order orderAction=${orderAction} orderPrice=${orderPrice} orderSize=${orderSize}`)
+            orderBook = handleOrder({orderAction, orderSize, orderPrice})
             wss.clients.forEach(client => {
-                if (client.readyState === ws.OPEN) {
-                    console.log(`sending to client the book`)
-                    const orderBook = getOrderBook()
+                if (client.readyState === socket.OPEN)
                     client.send(JSON.stringify(orderBook));
-                }
-            });
-        if (event.msg === 'openOrder')
-          wss.clients.forEach(client => {
-              if (client.readyState === ws.OPEN) {
-                  const { orderAction, orderSize, orderPrice } = event.body
-                  console.log(`processing order orderAction=${orderAction} orderPrice=${orderPrice} orderSize=${orderSize}`)
-                  const orderBook = handleOrder({orderAction, orderSize, orderPrice})
-                  console.log(`sending to client the updated book`)
-                  client.send(JSON.stringify(orderBook));
-              }
-          });            
+            });            
+        }       
     });
-    ws.on("close", () => {
+    socket.on("close", () => {
         console.log("the client has connected");
     });
-    ws.onerror = function () {
+    socket.onerror = function () {
         console.log("Some Error occurred")
     }
 });
