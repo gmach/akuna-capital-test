@@ -1,5 +1,3 @@
-import { createServer, Model } from "miragejs"
-
 const initOrderBook = () => {
   const tickSize = 0.25
   const askMax = 2971.50
@@ -20,19 +18,8 @@ const initOrderBook = () => {
   }
 }
 
-let orderBook = localStorage.orderBook; 
-if (orderBook != null)
-  orderBook = JSON.parse(orderBook);
-else {
-  orderBook = initOrderBook()
-  localStorage.orderBook = JSON.stringify(orderBook)
-}
-
-const handlePost = (schema, request) => {
-  let attrs = JSON.parse(request.requestBody)
-  const orderAction = attrs.orderAction
-  const orderSize = parseInt(attrs.orderSize)
-  const orderPrice = attrs.orderPrice
+export const handleOrder = ({orderAction, orderSize, orderPrice}) => {
+  orderSize = parseInt(orderSize)
   const { bids, asks } = orderBook;
   let updatedQuotes = []
   const isMarketSell = orderAction === 'marketSell'
@@ -74,17 +61,9 @@ const handlePost = (schema, request) => {
     bids: updatedQuotes
   }
   orderBook = { ...updatedBook }
-  localStorage.orderBook = JSON.stringify(orderBook)
   return updatedBook
 }
 
-createServer({
-  models: {
-    orderBook: Model,
-  },
-  routes() {
-    this.get("/api/orderbook", () => orderBook)
-    this.post("/api/orderbook", handlePost)
-  },
-})
+let orderBook = initOrderBook()
+export const getOrderBook = () => orderBook
 

@@ -23,7 +23,7 @@ const OrderEntry = ({orderSize, handleSizeChange, orderPrice, handlePriceChange}
         step="0.25" 
         min="0" 
         onChange={handlePriceChange}
-        name="size"/>        
+        name="price"/>        
     </div>    
     </>
     
